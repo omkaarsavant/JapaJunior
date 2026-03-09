@@ -65,7 +65,13 @@ async function startServer() {
   });
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("index.ts");
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const isMain = process.argv[1] &&
+  (path.resolve(process.argv[1]) === fileURLToPath(import.meta.url) ||
+    process.argv[1].endsWith("index.ts") ||
+    process.argv[1].endsWith("index.js"));
 
 if (isMain) {
   startServer().catch(console.error);
