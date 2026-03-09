@@ -1,20 +1,12 @@
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { ENV } from './_core/env';
-
-let allKanaCharacters: any[] = [];
-let getAllKanjiCharacters: any;
-let findKanjiByCharacter: any;
+import { allKanaCharacters } from '../shared/kanaData';
+import { getAllKanjiCharacters, findKanjiByCharacter } from '../shared/kanjiData';
 
 async function loadCharacterData() {
-  if (allKanaCharacters.length === 0) {
-    const kanaModule = await import('../shared/kanaData');
-    const kanjiModule = await import('../shared/kanjiData');
-    allKanaCharacters = kanaModule.allKanaCharacters;
-    getAllKanjiCharacters = kanjiModule.getAllKanjiCharacters;
-    findKanjiByCharacter = kanjiModule.findKanjiByCharacter;
-  }
+  // Data is now statically imported
 }
 
 export interface RecognitionResult {
