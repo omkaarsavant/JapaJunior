@@ -3,11 +3,7 @@ import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 import { ENV } from './_core/env';
 import { allKanaCharacters } from '../shared/kanaData';
-import { getAllKanjiCharacters, findKanjiByCharacter } from '../shared/kanjiData';
-
-async function loadCharacterData() {
-  // Data is now statically imported
-}
+import { findKanjiByCharacter } from '../shared/kanjiData';
 
 export interface RecognitionResult {
   character: string;
@@ -39,11 +35,17 @@ const model = google('gemini-3.1-flash-lite-preview');
 export async function recognizeCharacter(
   canvasDataUrl: string
 ): Promise<RecognitionResult | null> {
+  console.log('[RECOGNIZE] Starting character recognition...');
+
   try {
-    await loadCharacterData();
+    if (!ENV.googleApiKey && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      console.error('[RECOGNIZE] Error: No Google API Key found in environment');
+      return null;
+    }
+
     const base64Data = canvasDataUrl.split(',')[1];
     if (!base64Data) {
-      console.error('Invalid canvas data URL');
+      console.error('[RECOGNIZE] Error: Invalid image data');
       return null;
     }
 
@@ -51,8 +53,10 @@ export async function recognizeCharacter(
       character: z.string().describe('The recognized Japanese character'),
       romaji: z.string().describe('The romaji pronunciation'),
       type: z.enum(['hiragana', 'katakana', 'kanji']).describe('Character type'),
-      confidence: z.number().min(0).max(1).describe('Confidence score between 0 and 1'),
+      confidence: z.number().describe('Confidence score between 0 and 1'),
     });
+
+    console.log('[RECOGNIZE] Calling AI SDK (generateObject) with gemini-3.1-flash-lite-preview...');
 
     const result = await generateObject({
       model,
@@ -63,7 +67,7 @@ export async function recognizeCharacter(
           content: [
             {
               type: 'text',
-              text: 'Recognize this handwritten Japanese character. Return character, romaji, type, and confidence.',
+              text: 'You are a Japanese handwriting recognition expert. Tell me what Japanese character (Hiragana, Katakana, or Kanji) is drawn in this image. Response format: { "character": "...", "romaji": "...", "type": "...", "confidence": 0.0-1.0 }',
             },
             {
               type: 'image',
@@ -74,51 +78,41 @@ export async function recognizeCharacter(
       ],
     });
 
-    if (!result.object.character || !result.object.romaji || !result.object.type) {
+    console.log('[RECOGNIZE] AI Response:', JSON.stringify(result.object));
+
+    const { character, romaji, type, confidence } = result.object;
+
+    if (!character || !romaji || !type) {
+      console.warn('[RECOGNIZE] Incomplete response from AI');
       return null;
     }
 
-    let validCharacter = null;
-
-    if (result.object.type === 'kanji') {
-      validCharacter = findKanjiByCharacter(result.object.character);
+    // Try to find more detailed data in our shared sets
+    let detailedInfo: any = null;
+    if (type === 'kanji') {
+      detailedInfo = findKanjiByCharacter(character);
     } else {
-      validCharacter = allKanaCharacters.find(
-        (char) => char.character === result.object.character
-      );
-    }
-
-    if (!validCharacter) {
-      console.warn('Character not found in database');
-      return null;
-    }
-
-    const confidence = Math.min(Math.max(result.object.confidence, 0), 1);
-    if (confidence < 0.5) {
-      return null;
+      detailedInfo = allKanaCharacters.find(c => c.character === character);
     }
 
     return {
-      character: validCharacter.character,
-      romaji: validCharacter.romaji,
-      type: result.object.type,
-      confidence,
-      category: 'category' in validCharacter ? validCharacter.category : undefined,
-      meanings: 'meanings' in validCharacter ? validCharacter.meanings : undefined,
+      character,
+      romaji: detailedInfo?.romaji || romaji,
+      type: type as any,
+      confidence: confidence || 0.9,
+      category: detailedInfo?.category,
+      meanings: detailedInfo?.meanings,
     };
-  } catch (error) {
-    console.error('Character recognition error:', error);
-    return null;
+
+  } catch (error: any) {
+    console.error('[RECOGNIZE] Fatal error during recognition:', error);
+    throw error;
   }
 }
 
 export function buildWordFromCharacters(
   characters: RecognitionResult[]
 ): WordRecognitionResult {
-  if (characters.length === 0) {
-    throw new Error('No characters provided');
-  }
-
   const word = characters.map((c) => c.character).join('');
   const romaji = characters.map((c) => c.romaji).join('');
   const confidence =
@@ -146,10 +140,11 @@ export async function translateWord(
   romaji: string,
   wordType: string
 ): Promise<TranslationResult | null> {
+  console.log(`[TRANSLATE] Translating: ${word}`);
   try {
     const translationSchema = z.object({
-      translation: z.string().describe('English translation'),
-      definitions: z.array(z.string()).optional().describe('Definitions'),
+      translation: z.string(),
+      definitions: z.array(z.string()).optional(),
     });
 
     const result = await generateObject({
@@ -158,7 +153,7 @@ export async function translateWord(
       messages: [
         {
           role: 'user',
-          content: `Translate to English: ${word} (${romaji}, ${wordType})`,
+          content: `Translate this Japanese word to English. Word: ${word}, Romaji: ${romaji}, Type: ${wordType}. Provide a concise translation and optional definitions.`,
         },
       ],
     });
@@ -170,7 +165,7 @@ export async function translateWord(
       definitions: result.object.definitions,
     };
   } catch (error) {
-    console.error('Translation error:', error);
-    return null;
+    console.error('[TRANSLATE] Error:', error);
+    throw error;
   }
 }
