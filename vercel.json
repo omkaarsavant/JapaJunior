@@ -1,12 +1,17 @@
 {
     "version": 2,
-    "buildCommand": "pnpm build",
     "installCommand": "pnpm install",
+    "buildCommand": "pnpm build",
     "outputDirectory": "dist/public",
+    "functions": {
+        "api/index.mjs": {
+            "runtime": "@vercel/node@3"
+        }
+    },
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/api/index.ts"
+            "destination": "/api/index.mjs"
         },
         {
             "source": "/(.*)",

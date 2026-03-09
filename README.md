@@ -33,9 +33,7 @@ A modern, high-performance Japanese handwriting recognition application powered 
     Create a `.env` file in the root directory:
     ```env
     DATABASE_URL="file:./sqlite.db"
-    # For Turso: DATABASE_URL="libsql://your-db.turso.io"
-    # DATABASE_AUTH_TOKEN="your-auth-token"
-    
+
     # AI SDK
     GOOGLE_GENERATIVE_AI_API_KEY="your-key"
     # OR
@@ -59,8 +57,6 @@ This project is optimized for deployment on Vercel.
 1.  **Push your code** to a GitHub repository.
 2.  **Import the project** in the Vercel Dashboard.
 3.  **Configure Environment Variables**:
-    - `DATABASE_URL`: Your Turso DB URL.
-    - `DATABASE_AUTH_TOKEN`: Your Turso Auth Token.
     - `GOOGLE_GENERATIVE_AI_API_KEY` or `OPENAI_API_KEY`.
 4.  **Deploy!** The project includes `vercel.json` for automatic routing and build configuration.
 
