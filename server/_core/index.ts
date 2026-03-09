@@ -27,7 +27,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-async function startServer() {
+export async function createApp() {
   const app = express();
   const server = createServer(app);
   // Configure body parser with larger size limit for file uploads
@@ -47,6 +47,11 @@ async function startServer() {
   } else {
     serveStatic(app);
   }
+  return { app, server };
+}
+
+async function startServer() {
+  const { app, server } = await createApp();
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
@@ -60,4 +65,8 @@ async function startServer() {
   });
 }
 
-startServer().catch(console.error);
+const isMain = import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("index.ts");
+
+if (isMain) {
+  startServer().catch(console.error);
+}

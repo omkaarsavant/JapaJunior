@@ -1,0 +1,69 @@
+# Japanese Word Recognizer
+
+A modern, high-performance Japanese handwriting recognition application powered by AI. Draw Hiragana, Katakana, or Kanji, and get instant multi-character recognition, word segmentation, and English translations.
+
+## ✨ Features
+
+- **Advanced Handwriting Recognition**: Support for Hiragana, Katakana, and complex Kanji.
+- **Multi-Character Mode**: Draw entire words or sentences with automatic character boundary detection.
+- **AI-Powered Translation**: Context-aware translations and Romaji generation using Gemini or OpenAI.
+- **Premium UI**: Sleek, responsive design with smooth animations and a focus on user experience.
+
+## 🚀 Tech Stack
+
+- **Frontend**: React, Vite, Tailwind CSS, Framer Motion, Radix UI.
+- **Backend**: Node.js, Express, tRPC.
+- **Database**: LibSQL (SQLite/Turso) with Drizzle ORM.
+- **AI Integration**: Vercel AI SDK (Gemini/OpenAI).
+
+## 🛠️ Local Development
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/omkaarsavant/JapaJunior.git
+    cd JapaJunior
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    pnpm install
+    ```
+
+3.  **Setup Environment Variables**:
+    Create a `.env` file in the root directory:
+    ```env
+    DATABASE_URL="file:./sqlite.db"
+    # For Turso: DATABASE_URL="libsql://your-db.turso.io"
+    # DATABASE_AUTH_TOKEN="your-auth-token"
+    
+    # AI SDK
+    GOOGLE_GENERATIVE_AI_API_KEY="your-key"
+    # OR
+    OPENAI_API_KEY="your-key"
+    ```
+
+4.  **Initialize Database**:
+    ```bash
+    pnpm db:push
+    ```
+
+5.  **Start Development Server**:
+    ```bash
+    pnpm dev
+    ```
+
+## 🌐 Vercel Deployment
+
+This project is optimized for deployment on Vercel.
+
+1.  **Push your code** to a GitHub repository.
+2.  **Import the project** in the Vercel Dashboard.
+3.  **Configure Environment Variables**:
+    - `DATABASE_URL`: Your Turso DB URL.
+    - `DATABASE_AUTH_TOKEN`: Your Turso Auth Token.
+    - `GOOGLE_GENERATIVE_AI_API_KEY` or `OPENAI_API_KEY`.
+4.  **Deploy!** The project includes `vercel.json` for automatic routing and build configuration.
+
+## 📄 License
+
+MIT

@@ -5,8 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc';
 import { RotateCcw, Trash2, Plus, X, Copy, Trash, BookOpen, Languages, Sun, Moon, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '@/_core/hooks/useAuth';
-
 interface RecognitionResult {
   character: string;
   romaji: string;
@@ -29,7 +27,6 @@ const KATAKANA = 'アイウエオカキクケコサシスセソタチツテト�
 const KANJI_SAMPLES = '一二三四五六七八九十日月中火水木金土山川人上下右左';
 
 export default function Home() {
-  const { user } = useAuth();
   const [result, setResult] = useState<RecognitionResult | null>(null);
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [hasStrokes, setHasStrokes] = useState(false);
@@ -91,24 +88,6 @@ export default function Home() {
       setIsTranslating(false);
       if (data && wordCharacters.length > 0) {
         setTranslation(data.translation);
-
-        // Auto-save to history (Silent)
-        if (user) {
-          const word = wordCharacters.map((c) => c.character).join('');
-          const romaji = wordCharacters.map((c) => c.romaji).join('');
-          const types = new Set(wordCharacters.map((c) => c.type));
-          const wordType = types.size === 1 ? Array.from(types)[0] : 'mixed';
-          const confidence = wordCharacters.reduce((sum, c) => sum + c.confidence, 0) / wordCharacters.length;
-
-          saveHistoryMutation.mutate({
-            word,
-            romaji,
-            translation: data.translation,
-            wordType: wordType as 'hiragana' | 'katakana' | 'kanji' | 'mixed',
-            characters: JSON.stringify(wordCharacters),
-            confidence,
-          });
-        }
       }
     },
     onError: () => {
