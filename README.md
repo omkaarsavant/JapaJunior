@@ -2,7 +2,8 @@
 
 A modern, high-performance Japanese handwriting recognition application powered by AI. Draw Hiragana, Katakana, or Kanji, and get instant multi-character recognition, word segmentation, and English translations.
 
-<img width="1506" height="851" alt="image" src="https://github.com/user-attachments/assets/8a054912-8448-4ce8-8048-cd6775a75078" />
+<img width="1544" height="864" alt="image" src="https://github.com/user-attachments/assets/f0c19e35-9c72-43a7-b73c-c559a0c0f1df" />
+
 
 ## ✨ Features
 
