@@ -2,6 +2,8 @@
 
 A modern, high-performance Japanese handwriting recognition application powered by AI. Draw Hiragana, Katakana, or Kanji, and get instant multi-character recognition, word segmentation, and English translations.
 
+<img width="1506" height="851" alt="image" src="https://github.com/user-attachments/assets/8a054912-8448-4ce8-8048-cd6775a75078" />
+
 ## ✨ Features
 
 - **Advanced Handwriting Recognition**: Support for Hiragana, Katakana, and complex Kanji.
@@ -9,6 +11,7 @@ A modern, high-performance Japanese handwriting recognition application powered 
 - **Multi-Character Mode**: Draw entire words or sentences with automatic character boundary detection.
 - **AI-Powered Translation**: Context-aware translations and Romaji generation using Gemini or OpenAI.
 - **Premium UI**: Sleek, responsive design with smooth animations and a focus on user experience.
+- **Dark Mode Support**:Supports Dark Mode
 
 ## 🚀 Tech Stack
 
