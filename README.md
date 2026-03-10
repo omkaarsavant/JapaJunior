@@ -5,6 +5,7 @@ A modern, high-performance Japanese handwriting recognition application powered 
 ## ✨ Features
 
 - **Advanced Handwriting Recognition**: Support for Hiragana, Katakana, and complex Kanji.
+- **Pixel-Perfect Canvas**: High-DPI (Retina) support with automatic resizing for precise, sharp drawing at any resolution.
 - **Multi-Character Mode**: Draw entire words or sentences with automatic character boundary detection.
 - **AI-Powered Translation**: Context-aware translations and Romaji generation using Gemini or OpenAI.
 - **Premium UI**: Sleek, responsive design with smooth animations and a focus on user experience.
@@ -13,7 +14,6 @@ A modern, high-performance Japanese handwriting recognition application powered 
 
 - **Frontend**: React, Vite, Tailwind CSS, Framer Motion, Radix UI.
 - **Backend**: Node.js, Express, tRPC.
-- **Database**: LibSQL (SQLite/Turso) with Drizzle ORM.
 - **AI Integration**: Vercel AI SDK (Gemini/OpenAI).
 
 ## 🛠️ Local Development
@@ -32,27 +32,20 @@ A modern, high-performance Japanese handwriting recognition application powered 
 3.  **Setup Environment Variables**:
     Create a `.env` file in the root directory:
     ```env
-    DATABASE_URL="file:./sqlite.db"
-
     # AI SDK
     GOOGLE_GENERATIVE_AI_API_KEY="your-key"
     # OR
     OPENAI_API_KEY="your-key"
     ```
 
-4.  **Initialize Database**:
-    ```bash
-    pnpm db:push
-    ```
-
-5.  **Start Development Server**:
+4.  **Start Development Server**:
     ```bash
     pnpm dev
     ```
 
 ## 🌐 Vercel Deployment
 
-This project is optimized for deployment on Vercel.
+This project is optimized for deployment on Vercel as a lightweight, serverless application.
 
 1.  **Push your code** to a GitHub repository.
 2.  **Import the project** in the Vercel Dashboard.
