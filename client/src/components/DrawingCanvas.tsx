@@ -29,26 +29,43 @@ export function DrawingCanvas({
   const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
   const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize canvas
+  // Initialize canvas and handle resize
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const updateCanvasSize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
 
-    // Set canvas size
-    canvas.width = width;
-    canvas.height = height;
+      // Update internal resolution to match display size (scaled by DPR for sharpness)
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
 
-    // Set drawing context
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#000000';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
-  }, [width, height]);
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.scale(dpr, dpr);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#000000';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, rect.width, rect.height);
+      }
+
+      // Re-draw existing strokes after resize
+      redrawCanvas(strokes);
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateCanvasSize();
+    });
+
+    resizeObserver.observe(canvas);
+    updateCanvasSize();
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   // Catmull-Rom spline interpolation for smooth strokes
   const interpolatePoints = (points: Point[]): Point[] => {
@@ -117,13 +134,15 @@ export function DrawingCanvas({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const rect = canvas.getBoundingClientRect();
+
     // Clear canvas
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
 
     // Redraw all strokes
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -157,9 +176,13 @@ export function DrawingCanvas({
       pressure = touch.force || 1;
     }
 
+    // Calculate position relative to canvas display size
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top,
+      x,
+      y,
       pressure,
     };
   };
@@ -168,6 +191,11 @@ export function DrawingCanvas({
   const handleDrawStart = (
     e: MouseEvent | TouchEvent | PointerEvent
   ) => {
+    // Prevent scrolling when drawing on touch devices
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+
     if (e instanceof TouchEvent && e.touches.length > 1) return;
 
     const point = getCanvasCoordinates(e);
@@ -190,6 +218,11 @@ export function DrawingCanvas({
     if (!isDrawing) return;
     if (e instanceof TouchEvent && e.touches.length > 1) return;
 
+    // Prevent scrolling when drawing on touch devices
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+
     const point = getCanvasCoordinates(e);
     if (!point) return;
 
@@ -197,7 +230,7 @@ export function DrawingCanvas({
   };
 
   // Handle drawing end
-  const handleDrawEnd = () => {
+  const handleDrawEnd = (e?: any) => {
     if (!isDrawing) return;
 
     setIsDrawing(false);
@@ -240,7 +273,7 @@ export function DrawingCanvas({
     const p2 = currentStroke[currentStroke.length - 1];
 
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -255,29 +288,28 @@ export function DrawingCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const options: any = { passive: false };
+
     // Mouse events
-    canvas.addEventListener('mousedown', handleDrawStart as EventListener);
-    canvas.addEventListener('mousemove', handleDrawMove as EventListener);
-    canvas.addEventListener('mouseup', handleDrawEnd);
-    canvas.addEventListener('mouseleave', handleDrawEnd);
+    canvas.addEventListener('mousedown', handleDrawStart as EventListener, options);
+    canvas.addEventListener('mousemove', handleDrawMove as EventListener, options);
+    window.addEventListener('mouseup', handleDrawEnd);
 
     // Touch events
-    canvas.addEventListener('touchstart', handleDrawStart as EventListener);
-    canvas.addEventListener('touchmove', handleDrawMove as EventListener);
-    canvas.addEventListener('touchend', handleDrawEnd);
-    canvas.addEventListener('touchcancel', handleDrawEnd);
+    canvas.addEventListener('touchstart', handleDrawStart as EventListener, options);
+    canvas.addEventListener('touchmove', handleDrawMove as EventListener, options);
+    canvas.addEventListener('touchend', handleDrawEnd, options);
+    canvas.addEventListener('touchcancel', handleDrawEnd, options);
 
     // Pointer events (for stylus/pen support)
-    canvas.addEventListener('pointerdown', handleDrawStart as EventListener);
-    canvas.addEventListener('pointermove', handleDrawMove as EventListener);
-    canvas.addEventListener('pointerup', handleDrawEnd);
-    canvas.addEventListener('pointerleave', handleDrawEnd);
+    canvas.addEventListener('pointerdown', handleDrawStart as EventListener, options);
+    canvas.addEventListener('pointermove', handleDrawMove as EventListener, options);
+    window.addEventListener('pointerup', handleDrawEnd);
 
     return () => {
       canvas.removeEventListener('mousedown', handleDrawStart as EventListener);
       canvas.removeEventListener('mousemove', handleDrawMove as EventListener);
-      canvas.removeEventListener('mouseup', handleDrawEnd);
-      canvas.removeEventListener('mouseleave', handleDrawEnd);
+      window.removeEventListener('mouseup', handleDrawEnd);
 
       canvas.removeEventListener('touchstart', handleDrawStart as EventListener);
       canvas.removeEventListener('touchmove', handleDrawMove as EventListener);
@@ -286,8 +318,7 @@ export function DrawingCanvas({
 
       canvas.removeEventListener('pointerdown', handleDrawStart as EventListener);
       canvas.removeEventListener('pointermove', handleDrawMove as EventListener);
-      canvas.removeEventListener('pointerup', handleDrawEnd);
-      canvas.removeEventListener('pointerleave', handleDrawEnd);
+      window.removeEventListener('pointerup', handleDrawEnd);
     };
   }, [isDrawing, currentStroke, strokes]);
 
@@ -299,8 +330,9 @@ export function DrawingCanvas({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const rect = canvas.getBoundingClientRect();
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
 
     setStrokes([]);
     setCurrentStroke([]);

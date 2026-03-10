@@ -13,7 +13,7 @@ export type TrpcContext = {
     createdAt: Date;
     updatedAt: Date;
     lastSignedIn: Date;
-  };
+  } | null;
 };
 
 export async function createContext(
