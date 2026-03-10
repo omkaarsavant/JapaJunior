@@ -96,11 +96,6 @@ export default function Home() {
     },
   });
 
-  const saveHistoryMutation = trpc.word.saveToHistory.useMutation({
-    onError: () => {
-      console.error('Failed to auto-save word to history.');
-    },
-  });
 
   const drawingCanvas = DrawingCanvas({
     onStrokeStart: () => {
